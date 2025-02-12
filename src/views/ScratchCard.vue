@@ -2,6 +2,9 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import * as PIXI from 'pixi.js'
 
+const BG_URL =
+  'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/details/bg_cupPaste.png?t=001'
+
 let app: PIXI.Application | null = null
 const containerRef = ref<HTMLDivElement | null>(null)
 
@@ -29,6 +32,23 @@ onMounted(() => {
   if (containerRef.value) {
     containerRef.value.appendChild(app.view as HTMLCanvasElement)
   }
+
+  // 加载并绘制背景图片
+  PIXI.Assets.load(BG_URL).then((texture) => {
+    if (!app) return
+
+    const bgSprite = new PIXI.Sprite(texture)
+
+    // 设置图片高度与舞台一致
+    const scale = height / bgSprite.height
+    bgSprite.height = height
+    bgSprite.width = bgSprite.width * scale
+
+    // 水平居中
+    bgSprite.x = (width - bgSprite.width) / 2
+
+    app.stage.addChild(bgSprite)
+  })
 })
 
 // 组件卸载时清理
