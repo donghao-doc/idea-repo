@@ -16,9 +16,20 @@ const calculateHeight = (width: number) => {
   return Math.round(width * ratio)
 }
 
+// 计算响应式字号
+const calculateFontSize = (stageWidth: number) => {
+  const baseWidth = 375 // 基准宽度
+  const baseFontSize = 16 // 基准字号
+  return Math.round((stageWidth / baseWidth) * baseFontSize)
+}
+
 // 绘制背景
-const drawBackground = (texture: PIXI.Texture, stageWidth: number, stageHeight: number) => {
-  if (!app) return
+const drawBackground = (
+  texture: PIXI.Texture,
+  stageWidth: number,
+  stageHeight: number,
+): PIXI.Sprite => {
+  if (!app) throw new Error('PIXI Application is not initialized')
 
   const bgSprite = new PIXI.Sprite(texture)
   const scale = stageHeight / bgSprite.height
@@ -30,9 +41,42 @@ const drawBackground = (texture: PIXI.Texture, stageWidth: number, stageHeight: 
   return bgSprite
 }
 
+// 绘制文本
+const drawText = (textLineSprite: PIXI.Sprite, pixiApp: PIXI.Application, content: string) => {
+  // 计算响应式字号
+  const fontSize = calculateFontSize(pixiApp.screen.width)
+
+  // 创建文本样式
+  const textStyle = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+    fontSize,
+    fill: '#000000',
+    align: 'center',
+    wordWrap: true, // 启用自动换行
+    wordWrapWidth: textLineSprite.width, // 设置换行宽度为文本线宽度
+    breakWords: true, // 允许在单词中间换行（对中文很有用）
+    lineHeight: Math.round(fontSize * 2.2), // 设置行高为字号的2.2倍
+  })
+
+  // 创建文本精灵
+  const text = new PIXI.Text(content, textStyle)
+
+  // 设置文本位置
+  text.anchor.set(0.5, 0) // 设置锚点为中心，便于居中对齐
+  text.x = textLineSprite.x + textLineSprite.width / 2
+  text.y = textLineSprite.y - textLineSprite.height / 1.1
+
+  // 添加到舞台
+  pixiApp.stage.addChild(text)
+}
+
 // 绘制文本线
-const drawTextLine = (texture: PIXI.Texture, bgSprite: PIXI.Sprite, stageHeight: number) => {
-  if (!app) return
+const drawTextLine = (
+  texture: PIXI.Texture,
+  bgSprite: PIXI.Sprite,
+  stageHeight: number,
+): PIXI.Sprite => {
+  if (!app) throw new Error('PIXI Application is not initialized')
 
   const textLineSprite = new PIXI.Sprite(texture)
 
@@ -48,6 +92,8 @@ const drawTextLine = (texture: PIXI.Texture, bgSprite: PIXI.Sprite, stageHeight:
   // 将文本线放置在背景中间
   textLineSprite.x = bgSprite.x + (bgSprite.width - textLineSprite.width) / 2
   textLineSprite.y = stageHeight * 0.5
+
+  // 添加到舞台
   app.stage.addChild(textLineSprite)
 
   return textLineSprite
@@ -75,10 +121,14 @@ onMounted(() => {
   // 加载并绘制背景图片和文本线
   Promise.all([PIXI.Assets.load(BG_URL), PIXI.Assets.load(TEXT_LINE_URL)]).then(
     ([bgTexture, textLineTexture]) => {
+      if (!app) return
+
+      // 绘制背景
       const bgSprite = drawBackground(bgTexture, width, height)
-      if (bgSprite) {
-        drawTextLine(textLineTexture, bgSprite, height)
-      }
+
+      // 绘制文本线和文本
+      const textLineSprite = drawTextLine(textLineTexture, bgSprite, height)
+      drawText(textLineSprite, app, '恭喜你获得星巴克买一送一优惠券')
     },
   )
 })
