@@ -4,6 +4,8 @@ import * as PIXI from 'pixi.js'
 
 const BG_URL =
   'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/details/bg_cupPaste.png?t=001'
+const TEXT_LINE_URL =
+  'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/details/textLine.png?t=002'
 
 let app: PIXI.Application | null = null
 const containerRef = ref<HTMLDivElement | null>(null)
@@ -33,22 +35,37 @@ onMounted(() => {
     containerRef.value.appendChild(app.view as HTMLCanvasElement)
   }
 
-  // 加载并绘制背景图片
-  PIXI.Assets.load(BG_URL).then((texture) => {
-    if (!app) return
+  // 加载并绘制背景图片和文本线
+  Promise.all([PIXI.Assets.load(BG_URL), PIXI.Assets.load(TEXT_LINE_URL)]).then(
+    ([bgTexture, textLineTexture]) => {
+      if (!app) return
 
-    const bgSprite = new PIXI.Sprite(texture)
+      // 绘制背景
+      const bgSprite = new PIXI.Sprite(bgTexture)
+      const scale = height / bgSprite.height
+      bgSprite.height = height
+      bgSprite.width = bgSprite.width * scale
+      bgSprite.x = (width - bgSprite.width) / 2
+      app.stage.addChild(bgSprite)
 
-    // 设置图片高度与舞台一致
-    const scale = height / bgSprite.height
-    bgSprite.height = height
-    bgSprite.width = bgSprite.width * scale
+      // 绘制文本线
+      const textLineSprite = new PIXI.Sprite(textLineTexture)
 
-    // 水平居中
-    bgSprite.x = (width - bgSprite.width) / 2
+      // 计算目标宽度（背景宽度的70%）
+      const textLineWidth = bgSprite.width * 0.7
 
-    app.stage.addChild(bgSprite)
-  })
+      // 计算缩放比例
+      const textLineScale = textLineWidth / textLineSprite.width
+
+      // 等比例缩放文本线
+      textLineSprite.scale.set(textLineScale)
+
+      // 将文本线放置在背景中间
+      textLineSprite.x = bgSprite.x + (bgSprite.width - textLineSprite.width) / 2
+      textLineSprite.y = height * 0.5
+      app.stage.addChild(textLineSprite)
+    },
+  )
 })
 
 // 组件卸载时清理
