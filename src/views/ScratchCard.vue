@@ -16,6 +16,43 @@ const calculateHeight = (width: number) => {
   return Math.round(width * ratio)
 }
 
+// 绘制背景
+const drawBackground = (texture: PIXI.Texture, stageWidth: number, stageHeight: number) => {
+  if (!app) return
+
+  const bgSprite = new PIXI.Sprite(texture)
+  const scale = stageHeight / bgSprite.height
+  bgSprite.height = stageHeight
+  bgSprite.width = bgSprite.width * scale
+  bgSprite.x = (stageWidth - bgSprite.width) / 2
+  app.stage.addChild(bgSprite)
+
+  return bgSprite
+}
+
+// 绘制文本线
+const drawTextLine = (texture: PIXI.Texture, bgSprite: PIXI.Sprite, stageHeight: number) => {
+  if (!app) return
+
+  const textLineSprite = new PIXI.Sprite(texture)
+
+  // 计算目标宽度（背景宽度的70%）
+  const textLineWidth = bgSprite.width * 0.7
+
+  // 计算缩放比例
+  const textLineScale = textLineWidth / textLineSprite.width
+
+  // 等比例缩放文本线
+  textLineSprite.scale.set(textLineScale)
+
+  // 将文本线放置在背景中间
+  textLineSprite.x = bgSprite.x + (bgSprite.width - textLineSprite.width) / 2
+  textLineSprite.y = stageHeight * 0.5
+  app.stage.addChild(textLineSprite)
+
+  return textLineSprite
+}
+
 onMounted(() => {
   const width = window.innerWidth
   const height = calculateHeight(width)
@@ -38,32 +75,10 @@ onMounted(() => {
   // 加载并绘制背景图片和文本线
   Promise.all([PIXI.Assets.load(BG_URL), PIXI.Assets.load(TEXT_LINE_URL)]).then(
     ([bgTexture, textLineTexture]) => {
-      if (!app) return
-
-      // 绘制背景
-      const bgSprite = new PIXI.Sprite(bgTexture)
-      const scale = height / bgSprite.height
-      bgSprite.height = height
-      bgSprite.width = bgSprite.width * scale
-      bgSprite.x = (width - bgSprite.width) / 2
-      app.stage.addChild(bgSprite)
-
-      // 绘制文本线
-      const textLineSprite = new PIXI.Sprite(textLineTexture)
-
-      // 计算目标宽度（背景宽度的70%）
-      const textLineWidth = bgSprite.width * 0.7
-
-      // 计算缩放比例
-      const textLineScale = textLineWidth / textLineSprite.width
-
-      // 等比例缩放文本线
-      textLineSprite.scale.set(textLineScale)
-
-      // 将文本线放置在背景中间
-      textLineSprite.x = bgSprite.x + (bgSprite.width - textLineSprite.width) / 2
-      textLineSprite.y = height * 0.5
-      app.stage.addChild(textLineSprite)
+      const bgSprite = drawBackground(bgTexture, width, height)
+      if (bgSprite) {
+        drawTextLine(textLineTexture, bgSprite, height)
+      }
     },
   )
 })
