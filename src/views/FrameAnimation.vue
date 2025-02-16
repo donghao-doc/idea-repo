@@ -50,6 +50,21 @@ onMounted(() => {
   coinSprite.on('touchstart', () => {
     console.log('touchstart')
   })
+
+  // 创建投币按钮
+  const btnSprite = new PIXI.Sprite(
+    PIXI.Texture.from(
+      'https://morefun-active.oss-cn-beijing.aliyuncs.com/farfetch/draw/btn_draw.png',
+    ),
+  )
+  app.stage.addChild(btnSprite)
+  btnSprite.scale.set(0.5)
+  btnSprite.x = app.screen.width / 2 - btnSprite.width / 2
+  btnSprite.y = aniSprite.height * 0.78
+  btnSprite.eventMode = 'dynamic'
+  btnSprite.on('touchstart', () => {
+    console.log('touchstart')
+  })
 })
 
 // 根据序列帧图片链接获取纹理
