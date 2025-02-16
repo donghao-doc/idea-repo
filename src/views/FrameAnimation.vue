@@ -20,6 +20,14 @@ for (let i = 1; i <= 80; i++) {
   )
 }
 
+// 投币动画序列帧图片
+const putCoinImgArr: string[] = []
+for (let i = 1; i <= 38; i++) {
+  putCoinImgArr.push(
+    `https://morefun-active.oss-cn-beijing.aliyuncs.com/farfetch/animation/coin/coin${i}.png`,
+  )
+}
+
 onMounted(() => {
   const app = new PIXI.Application({
     width: window.innerWidth,
@@ -51,6 +59,18 @@ onMounted(() => {
     console.log('touchstart')
   })
 
+  // 创建投币动画精灵
+  const putCoinTextures = getTexture(putCoinImgArr)
+  const putCoinSprite = createAnimationSprite(putCoinTextures, 0.2, 0.5, false)
+  app.stage.addChild(putCoinSprite)
+  putCoinSprite.x = app.screen.width / 2 - putCoinSprite.width / 2
+  putCoinSprite.visible = false
+  putCoinSprite.onComplete = () => {
+    console.log('complete')
+    putCoinSprite.visible = false
+    putCoinSprite.gotoAndStop(0)
+  }
+
   // 创建投币按钮
   const btnSprite = new PIXI.Sprite(
     PIXI.Texture.from(
@@ -63,7 +83,8 @@ onMounted(() => {
   btnSprite.y = aniSprite.height * 0.78
   btnSprite.eventMode = 'dynamic'
   btnSprite.on('touchstart', () => {
-    console.log('touchstart')
+    putCoinSprite.visible = true
+    putCoinSprite.play()
   })
 })
 
@@ -73,10 +94,10 @@ function getTexture(urlArr: string[]) {
 }
 
 // 创建动画精灵
-function createAnimationSprite(textures: PIXI.Texture[], speed = 0.1, scale = 0.5) {
+function createAnimationSprite(textures: PIXI.Texture[], speed = 0.1, scale = 0.5, loop = true) {
   const aniSprite = new PIXI.AnimatedSprite(textures)
 
-  aniSprite.loop = true
+  aniSprite.loop = loop
   aniSprite.animationSpeed = speed
   aniSprite.scale.set(scale)
 
