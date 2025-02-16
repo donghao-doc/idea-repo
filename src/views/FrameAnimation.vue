@@ -6,9 +6,17 @@ const pixiCanvas = ref<HTMLDivElement>()
 
 // 许愿池序列帧图片
 const poolImgArr: string[] = []
-for (let i = 1; i < 21; i++) {
+for (let i = 1; i <= 20; i++) {
   poolImgArr.push(
     `https://morefun-active.oss-cn-beijing.aliyuncs.com/farfetch/animation/pool/pool${i}.jpg`,
+  )
+}
+
+// 硬币序列帧图片
+const coinImgArr: string[] = []
+for (let i = 1; i <= 80; i++) {
+  coinImgArr.push(
+    `https://morefun-active.oss-cn-beijing.aliyuncs.com/farfetch/animation/icon/icon${i}.png?v=1.0`,
   )
 }
 
@@ -23,11 +31,19 @@ onMounted(() => {
   })
   pixiCanvas.value?.appendChild(app.view as HTMLCanvasElement)
 
+  // 许愿池动画
   const poolTextures = getTexture(poolImgArr)
   const aniSprite = createAnimationSprite(poolTextures, 0.16)
   app.stage.addChild(aniSprite)
-
   aniSprite.play()
+
+  // 硬币动画
+  const coinTextures = getTexture(coinImgArr)
+  const coinSprite = createAnimationSprite(coinTextures, 0.2)
+  app.stage.addChild(coinSprite)
+  coinSprite.play()
+  coinSprite.x = app.screen.width - coinSprite.width
+  coinSprite.y = app.screen.height * 0.2
 })
 
 // 根据序列帧图片链接获取纹理
