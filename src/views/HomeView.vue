@@ -1,26 +1,22 @@
-<script setup lang="ts">
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const goToScratchCard = () => {
-  router.push('/scratch-card')
-}
-</script>
-
 <template>
-  <div class="home">
-    <button @click="goToScratchCard" class="scratch-btn">刮刮卡</button>
+  <div class="home-page">
+    <button @click="$router.push('/scratch-card')">刮刮卡</button>
+    <button @click="$router.push('/frame-animation')">序列帧动画</button>
   </div>
 </template>
 
 <style scoped>
-.home {
+.home-page {
   padding: 20px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
 
-.scratch-btn {
+.home-page > button {
+  width: 50%;
   padding: 10px 20px;
   font-size: 16px;
   background-color: #42b983;
@@ -31,7 +27,7 @@ const goToScratchCard = () => {
   transition: background-color 0.3s;
 }
 
-.scratch-btn:hover {
+.home-page > button:hover {
   background-color: #3aa876;
 }
 </style>

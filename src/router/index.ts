@@ -14,6 +14,11 @@ const router = createRouter({
       name: 'scratchCard',
       component: () => import('../views/ScratchCard.vue'),
     },
+    {
+      path: '/frame-animation',
+      name: 'frameAnimation',
+      component: () => import('../views/FrameAnimation.vue'),
+    },
   ],
 })
 
