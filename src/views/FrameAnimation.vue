@@ -44,6 +44,10 @@ onMounted(() => {
   coinSprite.play()
   coinSprite.x = app.screen.width - coinSprite.width
   coinSprite.y = app.screen.height * 0.2
+  coinSprite.eventMode = 'dynamic'
+  coinSprite.on('touchstart', () => {
+    console.log('touchstart')
+  })
 })
 
 // 根据序列帧图片链接获取纹理
