@@ -6,6 +6,8 @@ const BG_URL =
   'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/details/bg_cupPaste.png?t=001'
 const TEXT_LINE_URL =
   'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/details/textLine.png?t=002'
+const MASK_URL =
+  'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/assist/mask.png?t=002'
 
 let app: PIXI.Application | null = null
 const containerRef = ref<HTMLDivElement | null>(null)
@@ -24,21 +26,21 @@ const calculateFontSize = (stageWidth: number) => {
 }
 
 // 绘制背景
-const drawBackground = (
+const drawBgOrMask = (
   texture: PIXI.Texture,
   stageWidth: number,
   stageHeight: number,
 ): PIXI.Sprite => {
   if (!app) throw new Error('PIXI Application is not initialized')
 
-  const bgSprite = new PIXI.Sprite(texture)
-  const scale = stageHeight / bgSprite.height
-  bgSprite.height = stageHeight
-  bgSprite.width = bgSprite.width * scale
-  bgSprite.x = (stageWidth - bgSprite.width) / 2
-  app.stage.addChild(bgSprite)
+  const sprite = new PIXI.Sprite(texture)
+  const scale = stageHeight / sprite.height
+  sprite.height = stageHeight
+  sprite.width = sprite.width * scale
+  sprite.x = (stageWidth - sprite.width) / 2
+  app.stage.addChild(sprite)
 
-  return bgSprite
+  return sprite
 }
 
 // 绘制文本
@@ -119,18 +121,23 @@ onMounted(() => {
   }
 
   // 加载并绘制背景图片和文本线
-  Promise.all([PIXI.Assets.load(BG_URL), PIXI.Assets.load(TEXT_LINE_URL)]).then(
-    ([bgTexture, textLineTexture]) => {
-      if (!app) return
+  Promise.all([
+    PIXI.Assets.load(BG_URL),
+    PIXI.Assets.load(TEXT_LINE_URL),
+    PIXI.Assets.load(MASK_URL),
+  ]).then(([bgTexture, textLineTexture, maskTexture]) => {
+    if (!app) return
 
-      // 绘制背景
-      const bgSprite = drawBackground(bgTexture, width, height)
+    // 绘制背景
+    const bgSprite = drawBgOrMask(bgTexture, width, height)
 
-      // 绘制文本线和文本
-      const textLineSprite = drawTextLine(textLineTexture, bgSprite, height)
-      drawText(textLineSprite, app, '恭喜你获得星巴克买一送一优惠券')
-    },
-  )
+    // 绘制文本线和文本
+    const textLineSprite = drawTextLine(textLineTexture, bgSprite, height)
+    drawText(textLineSprite, app, '恭喜你获得星巴克买一送一优惠券')
+
+    // 绘制遮罩
+    drawBgOrMask(maskTexture, width, height)
+  })
 })
 
 // 组件卸载时清理
