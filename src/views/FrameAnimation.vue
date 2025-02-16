@@ -24,7 +24,7 @@ onMounted(() => {
   const app = new PIXI.Application({
     width: window.innerWidth,
     height: window.innerHeight,
-    backgroundColor: 0xffffff,
+    backgroundColor: 0x000000,
     antialias: true,
     resolution: window.devicePixelRatio || 1, // 设置分辨率为设备像素比
     autoDensity: true, // 自动调整 CSS 样式以匹配分辨率
@@ -34,6 +34,8 @@ onMounted(() => {
   // 许愿池动画
   const poolTextures = getTexture(poolImgArr)
   const aniSprite = createAnimationSprite(poolTextures, 0.16)
+  aniSprite.width = app.screen.width
+  aniSprite.height = aniSprite.width / (750 / 1334)
   app.stage.addChild(aniSprite)
   aniSprite.play()
 
