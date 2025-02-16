@@ -8,43 +8,70 @@ const TEXT_LINE_URL =
   'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/details/textLine.png?t=002'
 const MASK_URL =
   'https://morefun-active.oss-cn-beijing.aliyuncs.com/starbucks-super-2021/assist/mask.png?t=002'
+const textContent = '人有悲欢离合，月有阴晴圆缺，此事古难全'
 
 let app: PIXI.Application | null = null
 const containerRef = ref<HTMLDivElement | null>(null)
 
-// 计算响应式高度
+// 计算舞台响应式高度
 const calculateHeight = (width: number) => {
-  const ratio = 250 / 375 // 原始高宽比
+  const ratio = 250 / 375 // 原始高宽比（设计稿画布高度/设计稿画布宽度），假设设计稿是 375px 宽
   return Math.round(width * ratio)
 }
 
 // 计算响应式字号
 const calculateFontSize = (stageWidth: number) => {
-  const baseWidth = 375 // 基准宽度
+  const baseWidth = 375 // 基准宽度，假设设计稿是 375px 宽
   const baseFontSize = 16 // 基准字号
   return Math.round((stageWidth / baseWidth) * baseFontSize)
 }
 
-// 绘制背景
+// 绘制背景/遮罩
 const drawBgOrMask = (
   texture: PIXI.Texture,
   stageWidth: number,
   stageHeight: number,
 ): PIXI.Sprite => {
-  if (!app) throw new Error('PIXI Application is not initialized')
+  const bgOrMaskSprite = new PIXI.Sprite(texture)
+  const scale = stageHeight / bgOrMaskSprite.height
 
-  const sprite = new PIXI.Sprite(texture)
-  const scale = stageHeight / sprite.height
-  sprite.height = stageHeight
-  sprite.width = sprite.width * scale
-  sprite.x = (stageWidth - sprite.width) / 2
-  app.stage.addChild(sprite)
+  bgOrMaskSprite.height = stageHeight
+  bgOrMaskSprite.width = bgOrMaskSprite.width * scale
+  bgOrMaskSprite.x = (stageWidth - bgOrMaskSprite.width) / 2
 
-  return sprite
+  return bgOrMaskSprite
+}
+
+// 绘制文本线
+const drawTextLine = (
+  texture: PIXI.Texture,
+  bgSprite: PIXI.Sprite,
+  stageHeight: number,
+): PIXI.Sprite => {
+  const textLineSprite = new PIXI.Sprite(texture)
+
+  // 计算目标宽度（背景宽度的70%）
+  const textLineWidth = bgSprite.width * 0.7
+
+  // 计算缩放比例
+  const textLineScale = textLineWidth / textLineSprite.width
+
+  // 等比例缩放文本线
+  textLineSprite.scale.set(textLineScale)
+
+  // 将文本线放置在背景中间
+  textLineSprite.x = bgSprite.x + (bgSprite.width - textLineSprite.width) / 2
+  textLineSprite.y = stageHeight * 0.5
+
+  return textLineSprite
 }
 
 // 绘制文本
-const drawText = (textLineSprite: PIXI.Sprite, pixiApp: PIXI.Application, content: string) => {
+const drawText = (
+  textLineSprite: PIXI.Sprite,
+  pixiApp: PIXI.Application,
+  content: string,
+): PIXI.Text => {
   // 计算响应式字号
   const fontSize = calculateFontSize(pixiApp.screen.width)
 
@@ -68,44 +95,23 @@ const drawText = (textLineSprite: PIXI.Sprite, pixiApp: PIXI.Application, conten
   text.x = textLineSprite.x + textLineSprite.width / 2
   text.y = textLineSprite.y - textLineSprite.height / 1.1
 
-  // 添加到舞台
-  pixiApp.stage.addChild(text)
+  return text
 }
 
-// 绘制文本线
-const drawTextLine = (
-  texture: PIXI.Texture,
-  bgSprite: PIXI.Sprite,
-  stageHeight: number,
-): PIXI.Sprite => {
-  if (!app) throw new Error('PIXI Application is not initialized')
-
-  const textLineSprite = new PIXI.Sprite(texture)
-
-  // 计算目标宽度（背景宽度的70%）
-  const textLineWidth = bgSprite.width * 0.7
-
-  // 计算缩放比例
-  const textLineScale = textLineWidth / textLineSprite.width
-
-  // 等比例缩放文本线
-  textLineSprite.scale.set(textLineScale)
-
-  // 将文本线放置在背景中间
-  textLineSprite.x = bgSprite.x + (bgSprite.width - textLineSprite.width) / 2
-  textLineSprite.y = stageHeight * 0.5
-
-  // 添加到舞台
-  app.stage.addChild(textLineSprite)
-
-  return textLineSprite
+// 根据绘制圆的数量，判断是否结束
+let circleCount = 0
+const scratchEnd = () => {
+  circleCount += 1
+  if (circleCount >= 200) {
+    window.alert('已刮开')
+  }
 }
 
 onMounted(() => {
   const width = window.innerWidth
   const height = calculateHeight(width)
 
-  // 创建 PIXI 应用
+  // 创建 PIXI 应用（舞台）
   app = new PIXI.Application({
     width,
     height,
@@ -126,17 +132,57 @@ onMounted(() => {
     PIXI.Assets.load(TEXT_LINE_URL),
     PIXI.Assets.load(MASK_URL),
   ]).then(([bgTexture, textLineTexture, maskTexture]) => {
-    if (!app) return
+    if (!app) throw new Error('PIXI Application is not initialized')
 
-    // 绘制背景
+    // 创建遮罩、背景、文本线、文本精灵
+    const maskSprite = drawBgOrMask(maskTexture, width, height)
     const bgSprite = drawBgOrMask(bgTexture, width, height)
-
-    // 绘制文本线和文本
     const textLineSprite = drawTextLine(textLineTexture, bgSprite, height)
-    drawText(textLineSprite, app, '恭喜你获得星巴克买一送一优惠券')
+    const textSprite = drawText(textLineSprite, app, textContent)
 
-    // 绘制遮罩
-    drawBgOrMask(maskTexture, width, height)
+    // 创建遮罩容器、普通容器
+    const maskContainer = new PIXI.Container()
+    const container = new PIXI.Container()
+
+    // 往容器中添加精灵
+    maskContainer.addChild(maskSprite)
+    container.addChild(bgSprite)
+    container.addChild(textLineSprite)
+    container.addChild(textSprite)
+
+    // 将容器添加到舞台
+    app.stage.addChild(maskContainer)
+    app.stage.addChild(container)
+
+    // 创建图形，用于实现擦除效果
+    const scratchGraphics = new PIXI.Graphics()
+    // scratchGraphics.beginFill(0x000000, 0.5) // 设置填充颜色和透明度
+    // scratchGraphics.drawRect(0, 0, width, height) // 绘制矩形
+    // scratchGraphics.endFill() // 结束填充
+    app.stage.addChild(scratchGraphics)
+
+    // 设置容器遮罩
+    container.mask = scratchGraphics
+
+    // 设置遮罩容器事件
+    maskContainer.eventMode = 'dynamic' // 设置事件模式为动态
+    maskContainer.on('touchstart', () => {
+      scratchGraphics.beginFill(0xde3249, 1)
+    })
+    maskContainer.on('touchmove', (event) => {
+      const { x, y } = event.getLocalPosition(maskContainer)
+      scratchGraphics.drawCircle(x, y, 20)
+      scratchEnd()
+    })
+    maskContainer.on('touchend', () => {
+      scratchGraphics.endFill()
+    })
+    maskContainer.on('touchendoutside', () => {
+      scratchGraphics.endFill()
+    })
+    maskContainer.on('touchcancel', () => {
+      scratchGraphics.endFill()
+    })
   })
 })
 
