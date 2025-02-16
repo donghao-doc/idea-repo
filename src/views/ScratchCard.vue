@@ -143,7 +143,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="scratch-card-page">
     <div ref="containerRef"></div>
   </div>
 </template>
+
+<style scoped>
+.scratch-card-page {
+  width: 100vw;
+  height: 100vh;
+  background-color: #f0f0f0;
+}
+</style>
