@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import ScratchCard from '../views/ScratchCard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,7 +12,7 @@ const router = createRouter({
     {
       path: '/scratch-card',
       name: 'scratchCard',
-      component: ScratchCard,
+      component: () => import('../views/ScratchCard.vue'),
     },
   ],
 })
