@@ -2,6 +2,7 @@
   <div class="home-page">
     <button @click="$router.push('/scratch-card')">刮刮卡</button>
     <button @click="$router.push('/frame-animation')">序列帧动画</button>
+    <button @click="$router.push('/loader-loading')">Loader Loading</button>
   </div>
 </template>
 
